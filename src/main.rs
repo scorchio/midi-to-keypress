@@ -135,68 +135,19 @@ fn midi_callback(_timestamp_us: u64, raw_message: &[u8], app_state: &AppState) {
 }
 
 fn generate_old_mappings(mappings: &mut NoteMappings) {
-    let keys = vec![
-        'q', '2', 'w', '3', 'e', 'r', '5', 't', '6', 'y', '7', 'u', 'i'
-    ];
+    // just map a bunch of keys to 'x'
+    for idx in 1..96 {
+        let base = MidiNote::C0.index();
+        let mut note_mapping_mid = NoteMapping::new(MidiNote::new(idx as u8 + base).expect("Invalid note index"), 0, None);
 
-    for (key_idx, key) in keys.iter().enumerate() {
-        let base = MidiNote::C3.index();
-        let mut note_mapping_lo = NoteMapping::new(MidiNote::new(key_idx as u8 + base).expect("Invalid note index"), 0, None);
-        let mut note_mapping_mid = NoteMapping::new(MidiNote::new(key_idx as u8 + base + 12).expect("Invalid note index"), 0, None);
-        let mut note_mapping_hi = NoteMapping::new(MidiNote::new(key_idx as u8 + base + 24).expect("Invalid note index"), 0, None);
 
-        note_mapping_lo.on = NoteMapping::down_event(*key, Some(KbdKey::Control), Some(MOD_DELAY_MS));
-        note_mapping_lo.off = NoteMapping::up_event(*key, Some(KbdKey::Control), Some(MOD_DELAY_MS));
+        note_mapping_mid.on = NoteMapping::down_event('x', None, None);
+        note_mapping_mid.off = NoteMapping::up_event('x', None, None);
 
-        note_mapping_mid.on = NoteMapping::down_event(*key, None, None);
-        note_mapping_mid.off = NoteMapping::up_event(*key, None, None);
-
-        note_mapping_hi.on = NoteMapping::down_event(*key, Some(KbdKey::Shift), Some(MOD_DELAY_MS));
-        note_mapping_hi.off = NoteMapping::up_event(*key, Some(KbdKey::Shift), Some(MOD_DELAY_MS));
-
-        mappings.add(note_mapping_lo);
         mappings.add(note_mapping_mid);
-        mappings.add(note_mapping_hi);
-    }
-
-    // Add pad buttons on the top of my keyboard, which are on channel 9.
-    let pads = vec!['z', 'x', 'c', 'v', 'b', 'n', 'm', ','];
-    for (pad_idx, pad) in pads.iter().enumerate() {
-        let seq = vec![
-            Event::NoteMod(None), // Ensure no modifier keys are pressed at the start
-
-            // Press Escape twice to clear any dialogs, and to potentially
-            // exit the current Perform session.
-            Event::KeyDown(KbdKey::Escape),
-            Event::Delay(KEY_DELAY_MS),
-            Event::KeyUp(KbdKey::Escape),
-
-            Event::Delay(SYS_DELAY_MS),
-
-            // Hold Control, Alt, and Shift.
-            Event::KeyDown(KbdKey::Control),
-            Event::KeyDown(KbdKey::Alt),
-            Event::KeyDown(KbdKey::Shift),
-
-            // Let the modifier keys get registered
-            Event::Delay(MOD_DELAY_MS),
-
-            Event::KeyDown(KbdKey::Layout(*pad)),
-            Event::Delay(KEY_DELAY_MS),
-            Event::KeyUp(KbdKey::Layout(*pad)),
-
-            Event::Delay(MOD_DELAY_MS),
-
-            Event::KeyUp(KbdKey::Shift),
-            Event::KeyUp(KbdKey::Alt),
-            Event::KeyUp(KbdKey::Control),
-        ];
-
-        let mut pad_mapping = NoteMapping::new(MidiNote::new(pad_idx as u8 + 40).expect("Invalid note index"), 9, None);
-        pad_mapping.on = seq;
-        mappings.add(pad_mapping);
     }
 }
+
 
 fn run(midi_name: Option<String>) -> Result<(), Box<Error>> {
     let mut midi_ports: HashMap<String, MidiInputConnection<()>> = HashMap::new();
