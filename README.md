@@ -17,6 +17,6 @@ cargo run
 Usage
 -----
 
-To list available devices, run "miditran --list".  To specify a device to use as an input, run "miditran --device [device-name]".
+To list available devices, run `miditran --list`.  To specify a device to use as an input, run `miditran --device [device-name]`.
 
 Currently, there is no external configuration. For any MIDI note on messages, a "X" keyboard keypress will be triggered.
